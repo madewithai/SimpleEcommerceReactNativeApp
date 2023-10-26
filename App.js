@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { View, Alert, ScrollView, SafeAreaView, Image, Text, Button, TextInput } from 'react-native';
 import productApi from './ProductList';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+const Stack = createNativeStackNavigator();
 
 const ProductList = ({ onAddToCart }) => {
   return (
@@ -50,9 +53,8 @@ const Checkout = ({ cartItems, onOrder }) => {
   );
 };
 
-const App = () => {
+const HomeScreen = ({ navigation }) => {
   const [cartItems, setCartItems] = useState([]);
-  const [isCheckout, setIsCheckout] = useState(false);
 
   const addToCart = (product) => {
     setCartItems((prev) => [...prev, product]);
@@ -67,8 +69,22 @@ const App = () => {
   };
 
   const checkout = () => {
-    setIsCheckout(true);
+    navigation.navigate('Checkout', { cartItems });
   };
+
+  return (
+    <SafeAreaView>
+      <ScrollView>
+        <ProductList onAddToCart={addToCart} />
+        <Cart cartItems={cartItems} onCheckout={checkout} onRemoveFromCart={removeFromCart} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const CheckoutScreen = ({ route, navigation }) => {
+  const { cartItems } = route.params;
+  const [address, setAddress] = useState('');
 
   const order = (address) => {
     if (address.trim() === '') {
@@ -77,24 +93,19 @@ const App = () => {
     }
 
     alert('Siparişiniz alındı! Adres: ' + address);
-    setCartItems([]);
-    setIsCheckout(false);
+    navigation.goBack();
   };
 
-  return (
-    <SafeAreaView>
-      <ScrollView>
-        {isCheckout ? (
-          <Checkout cartItems={cartItems} onOrder={order} />
-        ) : (
-          <>
-            <ProductList onAddToCart={addToCart} />
-            <Cart cartItems={cartItems} onCheckout={checkout} onRemoveFromCart={removeFromCart} />
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
-  );
+  return <Checkout cartItems={cartItems} onOrder={order} />;
 };
 
-export default App;
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Ürün Listesi' }} />
+        <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Ödeme' }} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
