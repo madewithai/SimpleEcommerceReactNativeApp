@@ -11,10 +11,13 @@ const HomeScreen = ({ navigation }) => {
 
   const addToCart = (product) => setCartItems([...cartItems, product]);
 
-  const removeFromCart = (index) => {
-    const newCart = [...cartItems];
-    newCart.splice(index, 1);
+  const removeFromCart = (productId) => {
+    const newCart = cartItems.filter((item) => item.id !== productId);
     setCartItems(newCart);
+  };
+
+  const isProductInCart = (productId) => {
+    return cartItems.some((item) => item.id === productId);
   };
 
   const checkout = () => navigation.navigate('Checkout', { cartItems });
@@ -22,20 +25,33 @@ const HomeScreen = ({ navigation }) => {
   return (
     <SafeAreaView>
       <ScrollView>
-        {productApi.map((product) => (
-          <View key={product.id}>
-            <Image source={{ uri: product.image }} style={{ width: 100, height: 100 }} />
-            <Text>{product.tr.title}</Text>
-            <Button title="Sepete Ekle" onPress={() => addToCart(product)} />
-          </View>
-        ))}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Products</Text>
+          {productApi.map((product) => (
+            <View key={product.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Image source={{ uri: product.image }} style={{ width: 50, height: 50 }} />
+                <Text>{product.en.title}</Text>
+              </View>
+              {isProductInCart(product.id) ? (
+                <Button title="Remove" onPress={() => removeFromCart(product.id)} />
+              ) : (
+                <Button title="Add to cart" onPress={() => addToCart(product)} />
+              )}
+            </View>
+          ))}
+        </View>
+        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Cart</Text>
         {cartItems.map((product, index) => (
-          <View key={product.id}>
-            <Text>{product.tr.title}</Text>
-            <Button title="Çıkar" onPress={() => removeFromCart(index)} />
+          <View key={product.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Image source={{ uri: product.image }} style={{ width: 50, height: 50 }} />
+              <Text>{product.en.title}</Text>
+            </View>
+            <Button title="Remove" onPress={() => removeFromCart(product.id)} />
           </View>
         ))}
-        <Button title="Ödeme Yap" onPress={checkout} />
+        <Button title="Checkout" onPress={checkout} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -47,21 +63,24 @@ const CheckoutScreen = ({ route, navigation }) => {
 
   const order = () => {
     if (!address.trim()) {
-      Alert.alert('Hata', 'Lütfen adres bilginizi giriniz.');
+      Alert.alert('Error', 'Please enter your address information.');
       return;
     }
-    alert(`Siparişiniz alındı! Adres: ${address}`);
+    alert(`Thanks for your order! Your address: ${address}`);
     navigation.goBack();
   };
 
   return (
     <View>
       {cartItems.map((product) => (
-        <Text key={product.id}>{product.tr.title}</Text>
+        <View key={product.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <Image source={{ uri: product.image }} style={{ width: 50, height: 50 }} />
+          <Text>{product.en.title}</Text>
+        </View>
       ))}
-      <Text>Adres:</Text>
-      <TextInput value={address} onChangeText={setAddress} placeholder="Adresinizi giriniz..." style={{ borderWidth: 1, borderColor: 'gray', padding: 10, marginBottom: 10 }} />
-      <Button title="Sipariş Ver" onPress={order} />
+      <Text>Address:</Text>
+      <TextInput value={address} onChangeText={setAddress} placeholder="Your address..." style={{ borderWidth: 1, borderColor: 'gray', padding: 10, marginBottom: 10 }} />
+      <Button title="Order Now" onPress={order} />
     </View>
   );
 };
@@ -70,8 +89,8 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Ürün Listesi' }} />
-        <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Ödeme' }} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Product List' }} />
+        <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Checkout' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
