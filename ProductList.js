@@ -1,7 +1,4 @@
-import React from 'react';
-import { View, Text, Button, Image } from 'react-native';
-
-const products = [
+const productApi = [
   {
     id: 1,
     quantity: '800',
@@ -349,18 +346,4 @@ const products = [
   },
 ];
 
-const ProductList = ({ onAddToCart }) => {
-  return (
-    <View>
-      {products.map((product) => (
-        <View key={product.id}>
-          <Image source={{ uri: product.image }} style={{ width: 100, height: 100 }} />
-          <Text>{product.tr.title}</Text>
-          <Button title="Sepete Ekle" onPress={() => onAddToCart(product)} />
-        </View>
-      ))}
-    </View>
-  );
-};
-
-export default ProductList;
+export default productApi;
